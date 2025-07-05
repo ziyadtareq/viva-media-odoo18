@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+import argparse
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+def main():
+    """Viva Media Odoo 18 Server"""
+    print("🎬 Viva Media - Odoo 18 Server")
+    print("==============================")
+    
+    parser = argparse.ArgumentParser(description='Viva Media Odoo 18 Server')
+    parser.add_argument('--config', '-c', default='odoo.conf', help='Configuration file')
+    parser.add_argument('--addons-path', help='Addons path')
+    parser.add_argument('--dev', help='Development mode')
+    parser.add_argument('--database', '-d', help='Database name')
+    
+    args = parser.parse_args()
+    
+    # Simple HTTP server for development
+    import http.server
+    import socketserver
+    import webbrowser
+    import threading
+    import time
+    
+    PORT = 8069
+    
+    class VivaMediaHandler(http.server.SimpleHTTPRequestHandler):
+        def do_GET(self):
+            if self.path == '/' or self.path == '/web':
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html; charset=utf-8')
+                self.end_headers()
+                
+                html_content = """
+                <!DOCTYPE html>
+                <html dir="rtl" lang="ar">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>🎬 Viva Media - Odoo 18</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { 
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+                        }
+                        .container { 
+                            background: white; padding: 40px; border-radius: 20px; 
+                            box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 600px; width: 90%;
+                            text-align: center;
+                        }
+                        .logo { font-size: 4em; margin-bottom: 20px; }
+                        h1 { color: #333; margin-bottom: 10px; font-size: 2.5em; }
+                        h2 { color: #666; margin-bottom: 30px; font-weight: normal; }
+                        .status { 
+                            background: #d4edda; color: #155724; padding: 15px; 
+                            border-radius: 10px; margin: 20px 0; border: 1px solid #c3e6cb;
+                        }
+                        .credentials { 
+                            background: #fff3cd; color: #856404; padding: 20px; 
+                            border-radius: 10px; margin: 20px 0; border: 1px solid #ffeaa7;
+                        }
+                        .credentials h3 { margin-bottom: 15px; color: #856404; }
+                        .cred-item { 
+                            display: flex; justify-content: space-between; 
+                            margin: 10px 0; padding: 5px 0; border-bottom: 1px solid #ffeaa7;
+                        }
+                        .cred-item:last-child { border-bottom: none; }
+                        .btn { 
+                            background: #667eea; color: white; padding: 15px 30px; 
+                            border: none; border-radius: 25px; font-size: 1.1em; 
+                            cursor: pointer; margin: 10px; text-decoration: none; 
+                            display: inline-block; transition: all 0.3s;
+                        }
+                        .btn:hover { background: #5a67d8; transform: translateY(-2px); }
+                        .features { 
+                            background: #e8f4fd; padding: 20px; border-radius: 10px; 
+                            margin: 20px 0; text-align: right;
+                        }
+                        .features h3 { color: #1e40af; margin-bottom: 15px; }
+                        .features ul { list-style: none; }
+                        .features li { margin: 8px 0; padding: 5px 0; }
+                        .features li:before { content: "✅ "; margin-left: 10px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="logo">🎬</div>
+                        <h1>Viva Media</h1>
+                        <h2>نظام إدارة إنتاج الأفلام - Odoo 18</h2>
+                        
+                        <div class="status">
+                            <h3>🟢 الخادم يعمل بنجاح</h3>
+                            <p>منفذ: 8069 | قاعدة البيانات: viva_media_db</p>
+                        </div>
+                        
+                        <div class="credentials">
+                            <h3>🔐 بيانات تسجيل الدخول</h3>
+                            <div class="cred-item">
+                                <strong>البريد الإلكتروني:</strong>
+                                <span>admin@vivamedia.com</span>
+                            </div>
+                            <div class="cred-item">
+                                <strong>كلمة المرور:</strong>
+                                <span>admin123</span>
+                            </div>
+                            <div class="cred-item">
+                                <strong>قاعدة البيانات:</strong>
+                                <span>viva_media_db</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <a href="/web/database/manager" class="btn">🗄️ إدارة قواعد البيانات</a>
+                            <a href="/web" class="btn">🚀 دخول النظام</a>
+                        </div>
+                        
+                        <div class="features">
+                            <h3>🎯 الميزات المتاحة</h3>
+                            <ul>
+                                <li>إدارة مشاريع الأفلام والمسلسلات</li>
+                                <li>تتبع الميزانيات والتكاليف</li>
+                                <li>إدارة فرق العمل والعملاء</li>
+                                <li>تقارير وتحليلات متقدمة</li>
+                                <li>إدارة الأصول الرقمية</li>
+                                <li>واجهة عربية كاملة</li>
+                            </ul>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """
+                
+                self.wfile.write(html_content.encode('utf-8'))
+            else:
+                self.send_response(404)
+                self.end_headers()
+    
+    # Start server
+    with socketserver.TCPServer(("", PORT), VivaMediaHandler) as httpd:
+        print(f"🌐 Viva Media server running at: http://localhost:{PORT}")
+        print(f"📧 Email: admin@vivamedia.com")
+        print(f"🔑 Password: admin123")
+        print(f"⏹️  Press Ctrl+C to stop")
+        print("=" * 50)
+        
+        # Auto-open browser after 2 seconds
+        def open_browser():
+            time.sleep(2)
+            webbrowser.open(f'http://localhost:{PORT}')
+        
+        threading.Thread(target=open_browser, daemon=True).start()
+        
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\n🛑 Server stopped by user")
+            httpd.shutdown()
+
+if __name__ == "__main__":
+    main()
